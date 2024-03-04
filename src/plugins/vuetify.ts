@@ -1,17 +1,20 @@
-/**
- * plugins/vuetify.ts
- *
- * Framework documentation: https://vuetifyjs.com`
- */
-
-// Styles
+import '../styles/main.scss';
 import '@mdi/font/css/materialdesignicons.css';
-import 'vuetify/styles';
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import { mdiEye, mdiEyeOff } from '@mdi/js';
 
-// Composables
 import { createVuetify } from 'vuetify';
 
-// https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
-  //
+  icons: {
+    defaultSet: 'mdi',
+    aliases: {
+      ...aliases,
+      eye: mdiEye,
+      eyeOff: mdiEyeOff
+    },
+    sets: {
+      mdi
+    }
+  }
 });
