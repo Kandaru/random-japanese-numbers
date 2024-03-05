@@ -79,11 +79,11 @@
         </v-form>
       </v-sheet>
 
-      <v-card
+      <v-sheet
         v-if="['number', 'string'].includes(typeof generationResult.number)"
         border
         :elevation="10"
-        width="600"
+        min-width="200"
         class="pa-4 mt-10"
       >
         <v-card-subtitle>
@@ -126,7 +126,7 @@
             @click:append-inner="() => typesVisibility.romaji = !typesVisibility.romaji"
           />
         </v-card-text>
-      </v-card>
+      </v-sheet>
     </v-responsive>
   </v-container>
 </template>
@@ -164,7 +164,7 @@
 
   let randomizer: seedrandom.PRNG;
 
-  const chars = {
+  const chars: Record<string, Record<string, string>> = {
     kanji: {
       0: 'ゼロ | 零',
       1: '一',
@@ -193,14 +193,16 @@
       7: 'nana',
       8: 'hachi',
       9: 'kyuu',
-      10: 'jyuu',
-      100: 'hyaku',
       300: 'sambyaku',
       600: 'roppyaku',
       800: 'happyaku',
-      1000: 'sen',
       3000: 'san zen',
       8000: 'hassen',
+    },
+    romajiGrades: {
+      10: 'jyuu',
+      100: 'hyaku',
+      1000: 'sen',
       10000: 'man',
       100000000: 'oku',
     }
@@ -225,8 +227,67 @@
 
     const numberAsCharArray = generationResult.number?.toString().split('');
 
-    const blocks = [numberAsCharArray?.splice(0, numberAsCharArray.length % 4).reverse(), numberAsCharArray?.splice(0, 4).reverse(), numberAsCharArray];
-    console.log(blocks);
+    const blocks = [
+      numberAsCharArray?.splice(0, numberAsCharArray.length % 4).reverse(),
+      numberAsCharArray?.splice(0, 4).reverse(),
+      numberAsCharArray?.reverse()
+    ].filter(arr => arr?.length).reverse();
 
+
+    let { kanji, romaji } = parseInner(blocks[0]!);
+
+    if (blocks[1]) {
+      const result = parseInner(blocks[1]);
+      romaji = `${result.romaji} ${chars.romajiGrades[10000]} ${romaji}`;
+      kanji = `${result.kanji}${chars.kanji[10000]}${kanji}`;
+    }
+
+    if (blocks[2]) {
+      const result = parseInner(blocks[2]);
+      romaji = `${result.romaji} ${chars.romajiGrades[100000000]} ${romaji}`;
+      kanji = `${result.kanji}${chars.kanji[100000000]}${kanji}`;
+    }
+
+    generationResult.kanji = kanji;
+    generationResult.romaji = romaji;
+  }
+
+  function parseInner(charsArray: string[]) {
+    let result = {
+      kanji: '',
+      romaji: ''
+    };
+
+    charsArray.forEach((char, index) => {
+      const grade = 10 ** index;
+
+      if (char === '0') {
+        return;
+      }
+
+      if (grade === 1) {
+        result.kanji = chars.kanji[char] + result.kanji;
+        result.romaji = `${chars.romaji[char]} ${result.romaji}`;
+        return;
+      }
+
+      if (char === '1') {
+        result.romaji = `${chars.romajiGrades[grade]} ${result.romaji}`;
+        result.kanji = chars.kanji[grade] + result.kanji;
+        return;
+      }
+
+      if (chars.romaji[Number(char) * grade]) {
+        result.romaji = `${chars.romaji[Number(char) * grade]} ${result.romaji}`;
+      } else {
+        result.romaji = `${chars.romaji[char]} ${chars.romajiGrades[grade]} ${result.romaji}`;
+      }
+
+      result.kanji = chars.kanji[char] + chars.kanji[grade] + result.kanji;
+    });
+
+    result.romaji = result.romaji.split(' ').filter(_ => _).join(' ');
+
+    return result;
   }
 </script>
