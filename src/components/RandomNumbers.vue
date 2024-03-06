@@ -93,7 +93,8 @@
           <v-text-field
             :append-inner-icon="typesVisibility.number ? '$eye' : '$eyeOff'"
             hide-details
-            :type="typesVisibility.number ? 'text' : 'password'"
+            :type="typesVisibility.number ? 'number' : 'password'"
+            max="999999999999"
             variant="solo"
             v-model="generationResult.number"
             @input="parseNumber"
@@ -216,6 +217,10 @@
   }
 
   function parseNumber() {
+    if (generationResult.number! > 999999999999) {
+      generationResult.number! = 999999999999;
+    }
+
     generationResult.kanji = '';
     generationResult.romaji = '';
 
@@ -225,13 +230,17 @@
       return;
     }
 
-    const numberAsCharArray = generationResult.number?.toString().split('');
+    const numberAsCharArray = generationResult.number!.toString().split('');
+
+    const firstSliceLength = numberAsCharArray!.length % 4 || 4;
 
     const blocks = [
-      numberAsCharArray?.splice(0, numberAsCharArray.length % 4).reverse(),
-      numberAsCharArray?.splice(0, 4).reverse(),
-      numberAsCharArray?.reverse()
+      numberAsCharArray.splice(0, firstSliceLength).reverse(),
+      numberAsCharArray.splice(firstSliceLength, 4).reverse(),
+      numberAsCharArray.reverse()
     ].filter(arr => arr?.length).reverse();
+
+    console.log(blocks);
 
 
     let { kanji, romaji } = parseInner(blocks[0]!);
