@@ -236,12 +236,9 @@
 
     const blocks = [
       numberAsCharArray.splice(0, firstSliceLength).reverse(),
-      numberAsCharArray.splice(firstSliceLength, 4).reverse(),
+      numberAsCharArray.splice(0, 4).reverse(),
       numberAsCharArray.reverse()
     ].filter(arr => arr?.length).reverse();
-
-    console.log(blocks);
-
 
     let { kanji, romaji } = parseInner(blocks[0]!);
 
